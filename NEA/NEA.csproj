@@ -68,6 +68,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="css\main.css" />
+    <Content Include="floorplan\floorplan.svg" />
+    <Content Include="floorplan\test.svg" />
     <Content Include="html\index.html" />
     <Content Include="js\script.js" />
     <Content Include="Web.config" />
@@ -84,9 +86,7 @@
       <DependentUpon>Web.config</DependentUpon>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="floorplan\" />
-  </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
