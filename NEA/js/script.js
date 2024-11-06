@@ -7,9 +7,9 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 }).addTo(map);
 
-const floorplanBounds = [
-    [51.438803, 0.037470],
-    [51.438183, 0.039517]
+const floorplanBounds = [ // this determines where the floorplan will be placed on the map
+    [51.43879365871755, 0.03755286608972658], // co-ordinates of the top left
+    [51.43813284164057, 0.03974555388976837] // co-ordinates of the bottom right
 ]
 
 fetch("../floorplan/floorplan.svg")
@@ -20,13 +20,13 @@ fetch("../floorplan/floorplan.svg")
         svgContainer.innerHTML = svgText;
 
         const svgElement = svgContainer.querySelector('svg');
-        svgElement.setAttribute("transform", "rotate(-15)");  // Adjust angle as needed
+        svgElement.setAttribute("transform", "rotate(-12)");  // Adjust angle as needed
         svgElement.setAttribute("transform-origin", "center center");
 
 
         // Create a Leaflet overlay that will hold the SVG container
         const svgOverlay = L.svgOverlay(svgContainer, floorplanBounds, {
-            opacity: 0.4,
+            opacity: 0.9,
             interactive: true
         }).addTo(map);
     })
