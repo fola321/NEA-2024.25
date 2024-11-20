@@ -1,11 +1,15 @@
 ﻿let centre = L.latLng(51.438169210961554, 0.03854894655899355); // when the map loads, it is centred on the school
 let zoom = 19; // maximum zoom OSM allows for
-const map = L.map('map').setView(centre, zoom); // instantiating the map
+var map = L.map('map').setView(centre, zoom); // instantiating the map
 
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19, // overlaying OSM's tiles onto the map
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 }).addTo(map);
+
+L.marker([51.438439, 0.037766]).addTo(map)
+    .bindPopup('Foxbury Building. Nurses are on hand to help sick/injured students.')
+    .openPopup();
 
 const floorplanBounds = [ // this determines where the floorplan will be placed on the map
     [51.43879365871755, 0.03755286608972658], // co-ordinates of the top left
@@ -19,15 +23,18 @@ fetch("../floorplan/floorplan.svg")
         const svgContainer = L.DomUtil.create('div');
         svgContainer.innerHTML = svgText;
 
-        const svgElement = svgContainer.querySelector('svg');
-        svgElement.setAttribute("transform", "rotate(-12)");  // Adjust angle as needed
-        svgElement.setAttribute("transform-origin", "center center");
+        const svgElement = svgContainer.querySelector('svg'); 
+        svgElement.setAttribute("transform", "rotate(-12)");  // Angle of rotation of the floor plan
+        svgElement.setAttribute("transform-origin", "center center"); // centre of rotation is the centre of the image
 
 
         // Create a Leaflet overlay that will hold the SVG container
         const svgOverlay = L.svgOverlay(svgContainer, floorplanBounds, {
-            opacity: 0.9,
-            interactive: true
+            opacity: 0.9, // adjusting the opacity of the floor plan
+            interactive: true,
+            alt: "floorplan of Eltham College",
+            setBounds(floorplanBounds)
         }).addTo(map);
     })
     .catch(error => console.error("Error loading SVG:", error));
+
