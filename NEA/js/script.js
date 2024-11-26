@@ -1,20 +1,73 @@
-﻿let centre = L.latLng(51.438169210961554, 0.03854894655899355); // when the map loads, it is centred on the school
-let zoom = 19; // maximum zoom OSM allows for
-var map = L.map('map').setView(centre, zoom); // instantiating the map
+﻿let centre = L.latLng(51.438169210961554, 0.03854894655899355); // Map center
+let zoom = 19; // Initial zoom level
 
+const maxBounds = [
+    [51.43970242084919, 0.033531769774171834], // Top-left corner (latitude, longitude)
+    [51.43519890029115, 0.04160087761712992]  // Bottom-right corner (latitude, longitude)
+];
+
+// Initialize the map
+var map = L.map('map', {
+    center: centre,
+    zoom: zoom,
+    maxBounds: maxBounds, // Set the maximum panning bounds
+    maxBoundsViscosity: 1.0, // Prevent movement beyond bounds
+    minZoom: 17, // Set the minimum zoom level
+    maxZoom: 19  // Set the maximum zoom level
+});
+
+// Add OpenStreetMap tiles
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19, // overlaying OSM's tiles onto the map
+    maxZoom: 19, // Maximum zoom level for tiles
+    minZoom: 17, // Minimum zoom level for tiles
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 }).addTo(map);
 
+// Add a marker for reference
 L.marker([51.438439, 0.037766]).addTo(map)
     .bindPopup('Foxbury Building. Nurses are on hand to help sick/injured students.')
     .openPopup();
 
-const floorplanBounds = [ // this determines where the floorplan will be placed on the map
-    [51.43879365871755, 0.03755286608972658], // co-ordinates of the top left
-    [51.43813284164057, 0.03974555388976837] // co-ordinates of the bottom right
-]
+// Define the bounds for the floorplan overlay
+const floorplanBounds = [
+    [51.43879365871755, 0.03755286608972658], // Top-left corner
+    [51.43813284164057, 0.03974555388976837]  // Bottom-right corner
+];
+
+// Load and add the floorplan
+fetch("../floorplan/floorplan.svg")
+    .then(response => response.text())
+    .then(svgText => {
+        const blob = new Blob([svgText], { type: 'image/svg+xml' });
+        const url = URL.createObjectURL(blob);
+
+        const imageOverlay = L.imageOverlay(url, floorplanBounds, {
+            opacity: 0.9 // Transparency for overlay
+        }).addTo(map);
+
+        imageOverlay.on('add', function () {
+            const imgElement = imageOverlay.getElement();
+            if (imgElement) {
+                const originalTransform = imgElement.style.transform;
+
+                const observer = new MutationObserver(() => {
+                    imgElement.style.transform = `${originalTransform} rotate(-12deg)`;
+                    imgElement.style.transformOrigin = 'center';
+                });
+
+                observer.observe(imgElement, {
+                    attributes: true,
+                    attributeFilter: ['style']
+                });
+
+                map.on('unload', () => observer.disconnect());
+            }
+        });
+
+        map.on('unload', () => URL.revokeObjectURL(url));
+    })
+    .catch(error => console.error("Error loading SVG:", error));
+
 
 //fetch("../floorplan/floorplan.svg")
 //    .then(response => response.text())
@@ -35,46 +88,3 @@ const floorplanBounds = [ // this determines where the floorplan will be placed 
 //        }).addTo(map);
 //    })
 //    .catch(error => console.error("Error loading SVG:", error));
-
-
-
-fetch("../floorplan/floorplan.svg")
-    .then(response => response.text())
-    .then(svgText => {
-        // create an SVG Blob URL
-        const blob = new Blob([svgText], { type: 'image/svg+xml' });
-        const url = URL.createObjectURL(blob);
-
-        // add the image as an overlay fixed to the map bounds
-        const imageOverlay = L.imageOverlay(url, floorplanBounds, {
-            opacity: 0.9 // Adjust transparency
-        }).addTo(map);
-
-        // apply rotation after the overlay is added
-        imageOverlay.on('add', function () {
-            const imgElement = imageOverlay.getElement(); // access the <img> element
-            if (imgElement) {
-                // override the Leaflet transformation function
-                const originalTransform = imgElement.style.transform;
-
-                // observe and adjust rotation whenever Leaflet applies transforms
-                const observer = new MutationObserver(() => {
-                    imgElement.style.transform = `${originalTransform} rotate(-12deg)`;
-                    imgElement.style.transformOrigin = 'center'; // Set the rotation origin
-                });
-
-                // observe style changes to the image element
-                observer.observe(imgElement, {
-                    attributes: true,
-                    attributeFilter: ['style'] // Only observe style changes
-                });
-
-                // cleanup observer when the map is destroyed
-                map.on('unload', () => observer.disconnect());
-            }
-        });
-
-        // clean up the Blob URL when the map is destroyed
-        map.on('unload', () => URL.revokeObjectURL(url));
-    })
-    .catch(error => console.error("Error loading SVG:", error));
